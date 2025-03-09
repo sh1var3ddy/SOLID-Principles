@@ -1,0 +1,105 @@
+What is the Liskov Substitution Principle?
+The Liskov Substitution Principle states that objects of a superclass should be replaceable with objects of a subclass
+without affecting the correctness of the program. In simpler terms, if a class B extends a class A, you should be able
+to use an instance of B wherever an instance of A is expected, and the program should still work as intended.
+
+Example Violating LSP
+public class Bird {
+    public void fly() {
+        System.out.println("I am flying!");
+    }
+}
+
+public class Duck extends Bird {
+    @Override
+    public void fly() {
+        System.out.println("Duck is flying!");
+    }
+}
+
+public class Ostrich extends Bird {
+    @Override
+    public void fly() {
+        throw new UnsupportedOperationException("Ostriches can't fly!");
+    }
+}
+
+public class BirdWatcher {
+    public static void makeBirdFly(Bird bird) {
+        bird.fly(); // Expects all birds to fly
+    }
+
+    public static void main(String[] args) {
+        Bird duck = new Duck();
+        Bird ostrich = new Ostrich();
+
+        makeBirdFly(duck);    // Works fine: "Duck is flying!"
+        makeBirdFly(ostrich); // Fails: Throws an exception
+    }
+}
+
+Problems with this code:
+Violation of LSP: The Ostrich class inherits from Bird, but it overrides fly() in a way that breaks the expectation
+that all Bird objects can fly. When makeBirdFly is called with an Ostrich, it throws an exception, disrupting the program’s correctness.
+Unpredictable Behavior: Code that relies on the Bird type can’t safely assume anything about the fly() method when subclasses like Ostrich are involved.
+Fragility: Adding new bird types (e.g., penguins) would require more exceptions or checks, making the design brittle.
+
+
+Applying LSP
+// Abstract base class or interface for all birds
+public interface Bird {
+    // No fly() method here, as not all birds can fly
+}
+
+// Interface for birds that can fly
+public interface FlyingBird extends Bird {
+    void fly();
+}
+
+// Duck is a flying bird
+public class Duck implements FlyingBird {
+    @Override
+    public void fly() {
+        System.out.println("Duck is flying!");
+    }
+}
+
+// Ostrich is a bird, but not a flying bird
+public class Ostrich implements Bird {
+    // No fly() method, since ostriches don’t fly
+    public void run() {
+        System.out.println("Ostrich is running!");
+    }
+}
+
+public class BirdWatcher {
+    public static void makeFlyingBirdFly(FlyingBird bird) {
+        bird.fly(); // Only works with birds that can fly
+    }
+
+    public static void main(String[] args) {
+        FlyingBird duck = new Duck();
+        Bird ostrich = new Ostrich();
+
+        makeFlyingBirdFly(duck); // Works fine: "Duck is flying!"
+        // makeFlyingBirdFly(ostrich); // Won’t compile, as Ostrich isn’t a FlyingBird
+        ((Ostrich) ostrich).run();  // "Ostrich is running!"
+    }
+}
+
+Why Not ostrich.run()?
+The variable ostrich is declared as type Bird (the interface). In Java, when you declare a variable with an interface or 
+superclass type, you can only call methods that are defined in that interface or superclass on that variable—regardless of the 
+actual object it points to at runtime.
+
+The Bird interface doesn’t declare a run() method. It’s a minimal contract that doesn’t assume anything about running or flying
+(since those behaviors vary across birds).The Ostrich class, however, adds its own run() method, which is specific to ostriches
+and not part of the Bird interface.
+
+How this follows LSP:
+Correct Substitution: The FlyingBird interface ensures that only birds capable of flying implement the fly() method. 
+You can substitute any FlyingBird (like Duck) without issues.
+No Broken Expectations: Ostrich doesn’t inherit a fly() method it can’t fulfill. Instead, it has its own behavior (run()),
+and the hierarchy respects real-world logic.
+Type Safety: The compiler prevents you from passing an Ostrich to makeFlyingBirdFly, avoiding runtime errors.
+
