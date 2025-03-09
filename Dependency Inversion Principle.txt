@@ -1,0 +1,147 @@
+What is the Dependency Inversion Principle?
+The Dependency Inversion Principle states:
+
+High-level modules should not depend on low-level modules. Both should depend on abstractions.
+Abstractions should not depend on details. Details (concrete implementations) should depend on abstractions.
+
+In simpler terms, instead of having your high-level business logic directly rely on specific low-level implementations 
+(like a particular database or file system), both should rely on interfaces or abstract classes. This "inverts" the traditional 
+dependency direction, where high-level code dictates what it needs, and low-level code conforms to it.
+
+Example Violating DIP
+public class OrderService {
+    private MySQLDatabase database; // Direct dependency on a concrete class
+
+    public OrderService() {
+        this.database = new MySQLDatabase(); // Hardcoded instantiation
+    }
+
+    public void saveOrder(String orderDetails) {
+        database.connect();
+        database.save(orderDetails);
+        database.disconnect();
+    }
+}
+
+public class MySQLDatabase {
+    public void connect() {
+        System.out.println("Connecting to MySQL...");
+    }
+
+    public void save(String data) {
+        System.out.println("Saving to MySQL: " + data);
+    }
+
+    public void disconnect() {
+        System.out.println("Disconnecting from MySQL...");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        OrderService service = new OrderService();
+        service.saveOrder("Order #123");
+    }
+}
+
+Problems with this code:
+Tight Coupling: OrderService (high-level module) directly depends on MySQLDatabase (low-level module). 
+If you want to switch to PostgreSQL or a file system, you’d have to modify OrderService.
+Hardcoded Dependency: The MySQLDatabase instance is created inside OrderService, making it impossible to swap implementations 
+without changing the code.
+Testing Difficulty: You can’t easily mock the database for unit tests because OrderService controls its creation.
+
+Applying DIP
+// Abstraction for database operations
+public interface Database {
+    void connect();
+    void save(String data);
+    void disconnect();
+}
+
+// Concrete implementation #1
+public class MySQLDatabase implements Database {
+    @Override
+    public void connect() {
+        System.out.println("Connecting to MySQL...");
+    }
+
+    @Override
+    public void save(String data) {
+        System.out.println("Saving to MySQL: " + data);
+    }
+
+    @Override
+    public void disconnect() {
+        System.out.println("Disconnecting from MySQL...");
+    }
+}
+
+// Concrete implementation #2
+public class PostgreSQLDatabase implements Database {
+    @Override
+    public void connect() {
+        System.out.println("Connecting to PostgreSQL...");
+    }
+
+    @Override
+    public void save(String data) {
+        System.out.println("Saving to PostgreSQL: " + data);
+    }
+
+    @Override
+    public void disconnect() {
+        System.out.println("Disconnecting from PostgreSQL...");
+    }
+}
+
+// High-level module depends on the abstraction
+public class OrderService {
+    private Database database; // Dependency is an interface, not a concrete class
+
+    // Dependency is injected via constructor
+    public OrderService(Database database) {
+        this.database = database;
+    }
+
+    public void saveOrder(String orderDetails) {
+        database.connect();
+        database.save(orderDetails);
+        database.disconnect();
+    }
+}
+
+// Usage
+public class Main {
+    public static void main(String[] args) {
+        Database mysql = new MySQLDatabase();
+        OrderService serviceWithMySQL = new OrderService(mysql);
+        serviceWithMySQL.saveOrder("Order #123");
+
+        Database postgres = new PostgreSQLDatabase();
+        OrderService serviceWithPostgres = new OrderService(postgres);
+        serviceWithPostgres.saveOrder("Order #456");
+    }
+}
+
+How this follows DIP:
+Depend on Abstractions: OrderService depends on the Database interface, not a specific implementation like MySQLDatabase. 
+Both high-level (OrderService) and low-level (MySQLDatabase, PostgreSQLDatabase) modules depend on the Database abstraction.
+Inverted Dependency: The dependency direction is inverted—OrderService doesn’t create or know about the concrete database; 
+instead, the concrete database is provided to it (via constructor injection).
+Implementation Details Conform: MySQLDatabase and PostgreSQLDatabase implement the Database interface, adhering to the abstraction 
+defined by the high-level module’s needs.
+
+
+Benefits of DIP
+Flexibility: Switching from MySQL to PostgreSQL (or even a mock database for testing) requires no changes to OrderService.
+Testability: You can easily inject a mock Database implementation for unit testing:
+Benefits of DIP
+Flexibility: Switching from MySQL to PostgreSQL (or even a mock database for testing) requires no changes to OrderService.
+Testability: You can easily inject a mock Database implementation for unit testing
+Decoupling: High-level logic is isolated from low-level details, making the system easier to maintain and extend.
+
+
+
+
+
