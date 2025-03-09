@@ -1,0 +1,110 @@
+Single Responsibility Principle is one of the five SOLID principles of object-oriented design, and it states that a class should have only one reason to change, meaning it should have only one responsibility or job.
+
+SRP suggests that a class should focus on doing one thing and doing it well. If a class has multiple responsibilities (e.g., handling business logic, managing database connections, and formatting output), it becomes harder to maintain, test, and modify. When a class has a single responsibility, changes to one part of the system (e.g., how data is saved) won't unexpectedly affect unrelated functionality (e.g., how data is displayed).
+
+Example Without SRP:
+
+public class Employee {
+    private String name;
+    private double salary;
+
+    public Employee(String name, double salary) {
+        this.name = name;
+        this.salary = salary;
+    }
+
+    // Responsibility 1: Manage employee data
+    public String getName() {
+        return name;
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+
+    // Responsibility 2: Save to database
+    public void saveToDatabase() {
+        System.out.println("Saving " + name + " with salary " + salary + " to database");
+        // Database logic here
+    }
+
+    // Responsibility 3: Generate report
+    public void printReport() {
+        System.out.println("Employee Report: Name = " + name + ", Salary = " + salary);
+        // Report formatting logic here
+    }
+}
+
+=>Problems with this code:
+	The Employee class has three responsibilities:
+	Managing employee data (name, salary).
+	Persisting data to a database.
+	Generating a report.
+	If the database logic changes (e.g., switching from SQL to NoSQL), you’d need to modify this class.
+	If the report format changes (e.g., adding a new field), you’d also modify the same class.
+	These changes are unrelated, yet they affect the same class, making it fragile and harder to maintain.
+
+
+Applying SRP
+
+// Responsibility 1: Manage employee data
+public class Employee {
+    private String name;
+    private double salary;
+
+    public Employee(String name, double salary) {
+        this.name = name;
+        this.salary = salary;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+}
+
+// Responsibility 2: Save to database
+public class EmployeeRepository {
+    public void saveToDatabase(Employee employee) {
+        System.out.println("Saving " + employee.getName() + " with salary " + 
+                          employee.getSalary() + " to database");
+        // Database logic here
+    }
+}
+
+// Responsibility 3: Generate report
+public class EmployeeReportPrinter {
+    public void printReport(Employee employee) {
+        System.out.println("Employee Report: Name = " + employee.getName() + 
+                          ", Salary = " + employee.getSalary());
+        // Report formatting logic here
+    }
+}
+
+// Usage
+public class Main {
+    public static void main(String[] args) {
+        Employee emp = new Employee("Alice", 50000);
+        EmployeeRepository repo = new EmployeeRepository();
+        EmployeeReportPrinter printer = new EmployeeReportPrinter();
+
+        repo.saveToDatabase(emp);
+        printer.printReport(emp);
+    }
+}
+
+
+Benefits of this refactoring:
+Single Responsibility:
+	Employee: Manages employee data only.
+	EmployeeRepository: Handles persistence logic.
+	EmployeeReportPrinter: Handles report generation.
+	Easier Maintenance: If the database logic changes, you only modify EmployeeRepository. If the report format changes, you only modify EmployeeReportPrinter.
+	Reusability: The Employee class can be reused in different contexts without dragging along database or reporting logic.
+	Testability: You can test each responsibility independently (e.g., mock the database in EmployeeRepository tests).
+
+
+
