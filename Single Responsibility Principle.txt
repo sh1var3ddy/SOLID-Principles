@@ -1,6 +1,10 @@
-Single Responsibility Principle is one of the five SOLID principles of object-oriented design, and it states that a class should have only one reason to change, meaning it should have only one responsibility or job.
+Single Responsibility Principle is one of the five SOLID principles of object-oriented design, and it states that a class
+ should have only one reason to change, meaning it should have only one responsibility or job.
 
-SRP suggests that a class should focus on doing one thing and doing it well. If a class has multiple responsibilities (e.g., handling business logic, managing database connections, and formatting output), it becomes harder to maintain, test, and modify. When a class has a single responsibility, changes to one part of the system (e.g., how data is saved) won't unexpectedly affect unrelated functionality (e.g., how data is displayed).
+SRP suggests that a class should focus on doing one thing and doing it well. If a class has multiple responsibilities 
+(e.g., handling business logic, managing database connections, and formatting output), it becomes harder to maintain, test, and modify. 
+When a class has a single responsibility, changes to one part of the system (e.g., how data is saved) won't unexpectedly affect unrelated
+functionality (e.g., how data is displayed).
 
 Example Without SRP:
 
