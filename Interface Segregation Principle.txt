@@ -1,0 +1,146 @@
+What is the Interface Segregation Principle?
+The Interface Segregation Principle states that clients should not be forced to depend on interfaces they do not use. 
+In other words, instead of having one large, general-purpose interface with lots of methods, you should break it into 
+smaller, more specific interfaces. This ensures that implementing classes only need to provide behavior that’s relevant to them.
+
+The goal is to avoid "fat" interfaces that burden implementers with unnecessary responsibilities, making the code more modular and easier to maintain.
+
+Example Violating ISP
+public interface Worker {
+    void work();
+    void eat();
+    void sleep();
+}
+
+public class HumanWorker implements Worker {
+    @Override
+    public void work() {
+        System.out.println("Human is working.");
+    }
+
+    @Override
+    public void eat() {
+        System.out.println("Human is eating.");
+    }
+
+    @Override
+    public void sleep() {
+        System.out.println("Human is sleeping.");
+    }
+}
+
+public class RobotWorker implements Worker {
+    @Override
+    public void work() {
+        System.out.println("Robot is working.");
+    }
+
+    @Override
+    public void eat() {
+        // Robots don’t eat—forced to implement this anyway
+        throw new UnsupportedOperationException("Robots don’t eat!");
+    } 	
+
+    @Override
+    public void sleep() {
+        // Robots don’t sleep either
+        throw new UnsupportedOperationException("Robots don’t sleep!");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Worker human = new HumanWorker();
+        Worker robot = new RobotWorker();
+
+        human.work();  // "Human is working."
+        human.eat();   // "Human is eating."
+        robot.work();  // "Robot is working."
+        robot.eat();   // Throws exception
+    }
+}
+
+Problems with this code:
+Forced Implementation: The RobotWorker class is forced to implement eat() and sleep(), even though robots don’t eat or sleep. 
+This violates ISP because the Worker interface includes methods irrelevant to some implementers.
+Useless Code: The throw statements in RobotWorker are a workaround, cluttering the code and signaling a design flaw.
+Fragility: If the Worker interface adds more methods (e.g., drink()), all implementing classes—human and robot alike—must update, 
+even if the method doesn’t apply.
+
+Applying ISP
+// Interface for working behavior
+public interface Workable {
+    void work();
+}
+
+// Interface for human-like behaviors
+public interface Eatable {
+    void eat();
+}
+
+public interface Sleepable {
+    void sleep();
+}
+
+// Human implements all relevant interfaces
+public class HumanWorker implements Workable, Eatable, Sleepable {
+    @Override
+    public void work() {
+        System.out.println("Human is working.");
+    }
+
+    @Override
+    public void eat() {
+        System.out.println("Human is eating.");
+    }
+
+    @Override
+    public void sleep() {
+        System.out.println("Human is sleeping.");
+    }
+}
+
+// Robot only implements what it needs
+public class RobotWorker implements Workable {
+    @Override
+    public void work() {
+        System.out.println("Robot is working.");
+    }
+}
+
+// Usage
+public class Main {
+    public static void atWork(Workable worker) {
+        worker.work();
+    }
+
+    public static void atBreak(Eatable eater) {
+        eater.eat();
+    }
+
+    public static void atRest(Sleepable sleeper) {
+        sleeper.sleep();
+    }
+
+    public static void main(String[] args) {
+        HumanWorker human = new HumanWorker();
+        RobotWorker robot = new RobotWorker();
+
+        atWork(human);  // "Human is working."
+        atWork(robot);  // "Robot is working."
+        atBreak(human); // "Human is eating."
+        atRest(human);  // "Human is sleeping."
+        // atBreak(robot); // Won’t compile—RobotWorker doesn’t implement Eatable
+    }
+}
+
+How this follows ISP:
+Segregated Interfaces: The Worker interface is split into Workable, Eatable, and Sleepable, each representing a specific responsibility.
+No Forced Implementation: RobotWorker only implements Workable because that’s all it needs. It’s not burdened with eat() or sleep().
+Type Safety: Methods like atBreak and atRest only accept objects that implement the relevant interfaces, preventing misuse at compile time.
+
+Benefits of ISP
+Relevance: Classes only implement methods that make sense for them, reducing boilerplate or dummy implementations.
+Maintainability: Changes to one interface (e.g., adding a drink() method to Eatable) don’t affect classes that don’t care about it (e.g., RobotWorker).
+Flexibility: You can compose behaviors by combining interfaces, tailoring them to specific needs.
+
